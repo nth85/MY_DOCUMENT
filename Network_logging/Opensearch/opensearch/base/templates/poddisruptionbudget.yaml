@@ -1,0 +1,19 @@
+---
+# Source: opensearch/templates/poddisruptionbudget.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: "opensearch-cluster-master-pdb"
+  labels:
+    helm.sh/chart: opensearch-2.32.0
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "2.19.1"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: opensearch-cluster-master
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opensearch
+      app.kubernetes.io/instance: release-name

@@ -1,0 +1,165 @@
+---
+# Source: opensearch/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: opensearch-cluster-master
+  labels:
+    helm.sh/chart: opensearch-2.32.0
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "2.19.1"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: opensearch-cluster-master
+  annotations:
+    majorVersion: "2"
+spec:
+  serviceName: opensearch-cluster-master-headless
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opensearch
+      app.kubernetes.io/instance: release-name
+  replicas: 2
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - metadata:
+      name: opensearch-cluster-master
+    spec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "1Gi"
+      storageClassName: "nfs-delete"
+  template:
+    metadata:
+      name: "opensearch-cluster-master"
+      labels:
+        helm.sh/chart: opensearch-2.32.0
+        app.kubernetes.io/name: opensearch
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/version: "2.19.1"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: opensearch-cluster-master
+      annotations:
+        configchecksum: 87063540c9cf6d61211b83424240c93313078012e301ac5a8ef570c30ef53b5
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+      automountServiceAccountToken: false
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                  - release-name
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - opensearch
+      terminationGracePeriodSeconds: 120
+      volumes:
+      - name: config
+        configMap:
+          name: opensearch-cluster-master-config
+      - emptyDir: {}
+        name: config-emptydir
+      enableServiceLinks: true
+      initContainers:
+      - name: fsgroup-volume
+        image: "busybox:latest"
+        imagePullPolicy: "IfNotPresent"
+        command: ['sh', '-c']
+        args:
+          - 'chown -R 1000:1000 /usr/share/opensearch/data'
+        securityContext:
+          runAsUser: 0
+        resources:
+          {}
+        volumeMounts:
+          - name: "opensearch-cluster-master"
+            mountPath: /usr/share/opensearch/data
+      - name: configfile
+        image: "opensearchproject/opensearch:2.16.0"
+        imagePullPolicy: "IfNotPresent"
+        command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash
+          cp -r /tmp/configfolder/*  /tmp/config/
+        resources:
+          {}
+        volumeMounts:
+          - mountPath: /tmp/config/
+            name: config-emptydir
+          - name: config
+            mountPath: /tmp/configfolder/opensearch.yml
+            subPath: opensearch.yml
+      containers:
+      - name: "opensearch"
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+
+        image: "opensearchproject/opensearch:2.16.0"
+        imagePullPolicy: "IfNotPresent"
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          tcpSocket:
+            port: 9200
+          timeoutSeconds: 3
+        startupProbe:
+          failureThreshold: 30
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          tcpSocket:
+            port: 9200
+          timeoutSeconds: 3
+        ports:
+        - name: http
+          containerPort: 9200
+        - name: transport
+          containerPort: 9300
+        - name: metrics
+          containerPort: 9600
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        env:
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: cluster.initial_master_nodes
+          value: "opensearch-cluster-master-0,opensearch-cluster-master-1,"
+        - name: discovery.seed_hosts
+          value: "opensearch-cluster-master-headless"
+        - name: cluster.name
+          value: "opensearch-cluster"
+        - name: network.host
+          value: "0.0.0.0"
+        - name: OPENSEARCH_JAVA_OPTS
+          value: "-Xmx512M -Xms512M"
+        - name: node.roles
+          value: "master,ingest,data,remote_cluster_client,"
+        volumeMounts:
+        - name: "opensearch-cluster-master"
+          mountPath: /usr/share/opensearch/data
+        - name: config-emptydir
+          mountPath: /usr/share/opensearch/config/opensearch.yml
+          subPath: opensearch.yml
