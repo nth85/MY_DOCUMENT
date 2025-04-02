@@ -1,13 +1,15 @@
 https://prometheus.io/download/#prometheus  
 ## Install prometheus
+```
 tar xvf pro..
 mkdir /etc/prometheus
 cd /prometheus
 cp -r consoles console_... prometheus.yml /etc/prometheus
 cp prometheus prometool /etc/local/bin
 sudo chown prometheus:prometheus ... all_file
+```
 ## create systemd run prometheus
-
+```
 vi /etc/systemd/system/prometheus.service
 [Unit]
 Description=Prometheus
@@ -26,10 +28,11 @@ ExecStart=/usr/local/bin/prometheus \
 
 [Install]
 WantedBy=multi-user.target
-
+```
 systemctl start prometheus.service
 ###########
 # install node_exporter
+```
 wget ..
 tar xvf 
 cd node_exporter-1.4.0.linux-amd64
@@ -56,9 +59,11 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 systemctl start node_exporter
 systemctl enable node_exporter
-
+```
 #######
+
 # setup scrapte
+```
 vi /etc/prometheus/prometheus.yml
 scrape_configs:
   - job_name: "nodes"
@@ -68,4 +73,4 @@ scrape_configs:
 systemctl restart prometheus
 # check on dashboads of prometheus 
 target: 
-
+```
