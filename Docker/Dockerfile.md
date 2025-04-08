@@ -13,4 +13,19 @@ USER opensearch
 ```
 docker build -t openseach:2.16.0 .
 ```
+```
+docker run <imageID>
+```
+
+# Runcontainer by image local
+``
+docker run -t -p 9200:9200 -p 9600:9600 -e "discovery.type=single-node" -e "OPENSEARCH_INITIAL_ADMIN_PASSWORD=Opensearch#123" openseach:2.16.0
+``
+#check docker service
+```
+docker exec -it 8afa9ee6b998 sh
+curl https://localhost:9200 -ku admin:Opensearch#123
+curl https://localhost:9200/_cat/plugins?v -ku admin:Opensearch#123
+```
+
 --------------------------------------------
