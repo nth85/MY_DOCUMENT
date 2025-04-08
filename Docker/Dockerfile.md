@@ -1,4 +1,5 @@
 `https://github.com/Aiven-Open/prometheus-exporter-plugin-for-opensearch`
+
 **Create image Opensearch have prometheus-exporter**
 ```
 FROM docker.io/opensearchproject/opensearch:2.16.0
