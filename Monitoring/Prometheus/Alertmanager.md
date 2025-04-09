@@ -69,7 +69,8 @@ receivers:
 cat /var/mail/root
 tail -f /var/log/maillog
 ```
-*check pod Alertmanager sent to outside
+*check pod Alertmanager sent to outside*
+```
 kubectl exec -it alertmanager_pod_name -- sh telnet 192.168.56.120 25
 
 Connected to 192.168.56.120
