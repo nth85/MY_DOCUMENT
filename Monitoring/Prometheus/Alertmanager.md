@@ -1,12 +1,12 @@
 **Setup config Postfix local reicever Mail**
 
-*Check status Postfix
+*Check status Postfix*
 ```
 systemctl status postfix
 systemctl restart postfix
 ```
 
-*config postfix
+*config postfix*
 ```
 vi /etc/postfix/main.cf
 inet_interfaces = all
@@ -17,12 +17,12 @@ mydestination = $myhostname, localhost.$mydomain, localhost, @cluster.local
 
 systemctl restart postfix
 ```
-*check port listen Postfix
+*check port listen Postfix*
 ```
 netstat -plntu
 tcp        0      0 0.0.0.0:25              0.0.0.0:*               LISTEN      6383/master
 ```
-*install sent mailx
+*install sent mailx*
 ```
 sudo yum install mailx -y
 ```
@@ -31,7 +31,7 @@ sudo yum install mailx -y
 ```
 echo "Hello from Postfix" | mail -s "Test Mail" root
 cat /var/mail/root
-
+`
 From root@mail.cluster.local  Wed Apr  9 20:13:32 2025
 Return-Path: <root@mail.cluster.local>
 X-Original-To: root
@@ -48,7 +48,7 @@ Content-Transfer-Encoding: 7bit
 Message-Id: <20250409131332.C3BCE22F88F1@mail.cluster.local>
 From: root@mail.cluster.local (root)
 Hello from Postfix
-
+`
 tail -f /var/log/maillog
 echo -e "Subject: Test\n\nThis is a test" | sendmail root
 ```
