@@ -3,6 +3,7 @@ docker version
 **exec into a container**
 ```
 docker exec -it 4420c4452c5c sh
+telnet 192.168.56.6 25
 ```
 docker login
 ex: docker login localhost:8080
