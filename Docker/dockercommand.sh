@@ -1,6 +1,9 @@
 docker --help
 docker version
-
+**exec into a container**
+```
+docker exec -it 4420c4452c5c sh
+```
 docker login
 ex: docker login localhost:8080
 
