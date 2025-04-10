@@ -60,12 +60,20 @@ global
   smtp_smarthost: '192.168.56.120:25'
   smtp_from: 'alert@cluster.local'
 route:
-  receiver: 'mail-local'
+  group_by:
+  - alertname
+  group_interval: 3m
+  group_wait: 10s
+  repeat_interval: 5m
+  receiver: mail-local
 receivers:
-  - name: 'mail-local'
+  - name: mail-local
     email_configs:
-      - to 'root'
-        sent_resolved: true
+      - to: root@mail.cluster.local
+        require_tls: false
+templates:
+- /etc/alertmanager/*.tmpl
+
 cat /var/mail/root
 tail -f /var/log/maillog
 ```
