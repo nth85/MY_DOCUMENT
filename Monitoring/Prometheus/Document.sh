@@ -14,7 +14,7 @@ groups:
       - alert: node_filesystem_free_percent
         expr: 100 * node_filesystem_free_bytes{job="node"} / node_filesystem_size_bytes{job="node"} < 70
         annotations:
-          description: "filesystem {{.Labels.device}} on {{.Labels.instance}} is low on space, current available space is {{.Values}}"
+          description: "filesystem {{$Labels.device}} on {{$Labels.instance}} is low on space, current available space is {{$Value}}"
 #the same--> noti
 filesystem /dev/sda3 on 192.168.56.1:9100 is low on space, current available space is 20.4011
 
@@ -167,7 +167,7 @@ groups:
           severity: warning
           team: internal-infra
         annotations:
-          message: "node {{.Labels.instance}} is seeing high memory usage, currently available memory: {{.Value}}%"
+          message: "node {{$labels.instance}} is seeing high memory usage, currently available memory: {{$value}}%"
 ##
 vi vi /etc/alertmanager/alertmanager.yml
 global:
