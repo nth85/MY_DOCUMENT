@@ -85,3 +85,29 @@ Connected to 192.168.56.120
 220 mail postfix ESMTP
 ```
 
+**Monitor your Persistent Volume Claims (PVCs)***
+```
+kubelet_volume_stats_capacity_bytes   This metric indicates the total capacity of the volume.
+kubelet_volume_stats_used_bytes: This metric represents the current usage of the volume.
+100.0 * kubelet_volume_stats_used_bytes{job="kubelet", namespace="btel", persistentvolumeclaim="storage-volume-cpro-server-1"} / kubelet_volume_stats_capacity_bytes
+
+kube_persistentvolume_capacity_bytes 
+kube_persistentvolumeclaim_resource_requests_storage_bytes
+
+kubectl get pods -n namespace1
+kubectl exec -it {pod_name} -n namespace1 bash
+df -h
+ls -l /mount
+
+https://technotes.adelerhof.eu/containers/kubernetes/check-pvc-usage/
+containers:
+  - name: debugger
+    image: busybox
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - mountPath: "/data"
+      name: debug-pv
+kubectl exec -it -n kasten-io volume-size-debugger -- sh
+df -ah /data
+exec into pvc with busybox for check disk usage
+```
