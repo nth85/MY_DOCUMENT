@@ -2,8 +2,8 @@ Name	Command
 https://github.com/kubernetes/kubernetes/issues/85776
 https://github.com/kubernetes/kubernetes/issues/85776#issue-530799257
 
-Run curl test temporarily	kubectl run --rm mytest --image=yauritux/busybox-curl -it
-Run wget test temporarily	kubectl run --rm mytest --image=busybox -it
+|Run curl test temporarily|	kubectl run --rm mytest --image=yauritux/busybox-curl -it|
+|Run wget test temporarily|	kubectl run --rm mytest --image=busybox -it|
 Run nginx deployment with 2 replicas	kubectl run my-nginx --image=nginx --replicas=2 --port=80
 Run nginx pod and expose it	kubectl run my-nginx --restart=Never --image=nginx --port=80 --expose
 Run nginx deployment and expose it	kubectl run my-nginx --image=nginx --port=80 --expose
