@@ -111,3 +111,19 @@ kubectl exec -it -n kasten-io volume-size-debugger -- sh
 df -ah /data
 exec into pvc with busybox for check disk usage
 ```
+**Check PVC with prometheus**
+```
+{__name__=~".*"}
+opensearch_indices_total_size_bytes
+groups:
+  - name: pvc_alerts
+    rules:
+      - alert: PVCUsageTooHigh
+        expr: (sum(opensearch_indices_total_size_bytes) / <tổng_kích_thước_PVC> * 100) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PVC usage high for OpenSearch"
+          description: "PVC usage is above 90% for OpenSearch."
+```
