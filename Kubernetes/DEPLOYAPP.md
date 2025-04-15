@@ -6,7 +6,7 @@ k get nodes -l network-logging=enbaled
 ```
 **Create Image private on Harbor repo**
 ```
-- Opensearch:
+1. Opensearch
 docker login harbor.trhuy.com -u admin -p <password>
 vi Dockerfile
 
@@ -23,6 +23,18 @@ docker build -t opensearch:2.17.0 .
 docker tag  opensearch:2.17.0 harbor.trhuy.com/demo/opensearch:2.17.0
 docker login harbor.trhuy.com -u admin -p <password>
 docker push harbor.trhuy.com/demo/opensearch:2.17.0
+
+2. Logstash
+vi Dockerfile
+
+FROM logstash:8.15.0
+RUN echo 'OpenSSL::SSL.const_set(:VERIFY_PEER, OpenSSL::SSL::VERIFY_NONE)' >> /usr/share/logstash/lib/pluginmanager/install.rb
+RUN bin/logstash-plugin install logstash-output-opensearch
+RUN sed -i '/OpenSSL::SSL.const_set(:VERIFY_PEER, OpenSSL::SSL::VERIFY_NONE)/d' /usr/share/logstash/lib/pluginmanager/install.rb
+
+docker build -t opensearch:2.17.0 .
+OR:
+docker pull opensearchproject/logstash-oss-with-opensearch-output-plugin:8.9.0
 ```
 **Create Manifest file config for Service**
 
@@ -58,6 +70,22 @@ k exec -it -n opensearch openserach-cluster-master-0 -- bash
 curl -XGET "https://$HOSTNAME:9200/_cat/plugins?v=true&pretty" -k -u 'admin:password'
 curl -XGET "https://$HOSTNAME:9200/_cluster/health?pretty" -k -u 'admin:password'
 curl -XGET "https://$HOSTNAME:9200/_cat/nodes?pretty" -k -u 'admin:password'
+
+- Opensearch-Dashboard
+
+helm template --validate --output-dir . --version 2.20.0 --namespace opensearch -f values.yaml opensearch-dashboards opensearch/opensearch-dashboards
+
+- Create kustomize tree
+kustomize init
+kustomize build .
+
+- Push to git
+git init
+git add .
+git status
+git commit -m "update"
+git remote add origin "https://my_git.com"
+git push origin master --force
 ```
 
 *2.Deploy Prometheus and Grafana*
@@ -82,4 +110,38 @@ git add .
 git status
 git commit -m "update"
 git push origin master --force
+```
+
+*3.Deploy Logtash service*
+```
+vi values.yaml
+helm repo add elastic
+helm repo update
+helm template --validate --output-dir . --version 8.5.1--namespace opensearch -f values.yaml logstash elastic/logstash
+- Create kustomize tree
+kustomize init
+kustomize build .
+```
+
+*4.Deploy filebeat service*
+```
+vi values.yaml
+helm repo add elastic
+helm repo update
+helm template --validate --output-dir . --version 8.5.1--namespace opensearch -f values.yaml filebeat elastic/filebeat
+- Create kustomize tree
+kustomize init
+kustomize build .
+```
+
+*6. Deploy akhq service*
+```
+vi values.yaml
+helm repo add akhq https://akhq.io/
+helm repo update
+
+helm template --validate --output-dir . --version 0.25.1--namespace kafka -f values.yaml akhq akhq/akhq
+- Create kustomize tree
+kustomize init
+kustomize build .
 ```
