@@ -7,4 +7,13 @@ helm repo update gitea
 
 helm template --output-dir . git --namesapce --values 1.yaml gitea gitea-charts/gitea
 vi values.yaml
+
+helm template --output-dir . gitea --namespace gitea -f values.yaml gitea-charts/gitea
+
+cd gitea
+k create ns gitea
+
+k apply -f ./charts --recursive
+k get pods -A
+k apply -f . gitea --recursive
 ```
