@@ -1,0 +1,168 @@
+
+imagePullSecrets: []
+
+
+serviceAccounts:
+  server:
+    create: true
+    name: ""
+    annotations: {}
+
+configmapReload:
+  prometheus:
+    enabled: true
+    name: configmap-reload
+    image:
+      repository: quay.io/prometheus-operator/prometheus-config-reloader
+      tag: v0.74.0
+      pullPolicy: IfNotPresent
+
+server:
+  name: server
+  image:
+    repository: quay.io/prometheus/prometheus
+    tag: "v2.53.0"
+    pullPolicy: IfNotPresent
+  global:
+    scrape_interval: 1m
+    scrape_timeout: 10s
+    evaluation_interval: 1m
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts: []
+      - myprometheus.example.com
+    path: /
+    pathType: Prefix
+    tls: []
+    #   - secretName: cert-secret
+    #     hosts:
+    #       - myprometheus.example.com
+  nodeSelector: {}
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: 8Gi
+    storageClass: "nfs-delete"
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - prometheus-alertmanager:9093
+  replicaCount: 1
+  retention: "15d"
+  retentionSize: "5GB"
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: containerRestart
+        rules:
+          - alert: containerRestart
+            expr: increase(kube_pod_container_status_restarts_total[5m]) >= 1
+            for: 0m
+            labels:
+              severity: critical
+            # annotations:
+            #   description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+            #   summary: 'Instance {{ $labels.instance }} down'
+      - name: opensearchClusterStatus
+        rules:
+          - alert: opensearchClusterStatus
+            expr: sum(opensearch_cluster_status) > 0
+            for: 1m
+            labels:
+              severity: critical
+      - name: HighJVMheap
+        rules:
+          - alert: HighJVMheap
+            expr: opensearch_jvm_mem_heap_used_percent{cluster="opensearch-cluster"} > 50
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              description: "High JVMheap of {{ $labels.node }} in {{ $labels.cluster }} with current available {{$value}}"
+      - name: logstashPipelineDown
+        rules:
+          - alert: logstashPipelineDown
+            expr: max(logstash_stats_pipeline_up) != 1
+            for: 1m
+            labels:
+              severity: critical
+  prometheus.yml:
+    rule_files:
+      - /etc/config/recording_rules.yml
+      - /etc/config/alerting_rules.yml
+      - /etc/config/rules
+      - /etc/config/alerts
+
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets:
+            - localhost:9090
+
+      - job_name: 'nw-opensearch-metric-job
+        static_configs:
+          - targets:
+            - opensearch-cluster-master-0.opensearch-cluster-master-headless.opensearch.svc.cluster.local:9200
+            - opensearch-cluster-master-1.opensearch-cluster-master-headless.opensearch.svc.cluster.local:9200
+        scheme: https
+        basic_auth:
+          username: admin
+          password: <password_opensearch>
+        tls_config:
+          insecure_skip_verify: true
+        metrics_path: /_prometheus/metrics
+        scrape_interval: 30s
+        
+alertmanager:
+  enabled: true
+  persistence:
+    enabled: false
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts: []
+      - myalermanager.example.com
+    path: /
+    pathType: Prefix
+    tls: []
+    #   - secretName: cert-secret
+    #     hosts:
+    #       - myalermanager.example.com
+    config:
+      enabled: true
+      global:
+        smtp_smarthost: '192.168.56.120:25' # IP of postfix mail local
+        smtp_from: 'alert@cluster.local'
+      route:
+        group_by:
+        - alertname
+        group_interval: 3m
+        group_wait: 10s
+        repeat_interval: 5m
+        receiver: mail-local
+      receivers:
+        - name: mail-local
+          email_configs:
+            - to: root@mail.cluster.local # address postfix mail local root
+              require_tls: false
+      templates:
+      - /etc/alertmanager/*.tmpl
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+rbac:
+  create: true
+
+podSecurityPolicy:
+  enabled: false
