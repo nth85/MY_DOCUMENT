@@ -1,11 +1,21 @@
+# imagePullSecrets:
+#   - name: "harbor"  # name secret harbor on k8s
+
 replicas: 2
 
 image:
-  repository: "opensearchproject/opensearch"
+  repository: "opensearchproject/opensearch" #harbor.trhuy.com/demo/opensearch
   tag: "2.16.0"
   pullPolicy: "IfNotPresent"
 
-opensearchJavaOpts: "-Xmx512M -Xms512M"
+extraEnvs:
+  - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+    value: <password>
+
+labels:
+  app: network-logging-opensearch
+
+opensearchJavaOpts: "-Xmx512m -Xms512m"
 
 resources:
   requests:
@@ -15,10 +25,14 @@ resources:
 
 persistence:
   enabled: true
+  image: "harbor.trhuy.com/demo/busybox"
+  imageTag: "1.37"
   labels:
-    # Add default labels for the volumeClaimTemplate of the StatefulSet
     enabled: false
   storageClass: "nfs-delete"
   accessModes:
     - ReadWriteOnce
   size: 1Gi
+
+nodeSelector:
+  network-logging: enabled
