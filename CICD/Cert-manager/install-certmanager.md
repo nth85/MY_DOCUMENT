@@ -1,4 +1,4 @@
-https://cert-manager.io/docs/installation/helm/
+*https://raymii.org/s/tutorials/Self_signed_Root_CA_in_Kubernetes_with_k3s_cert-manager_and_traefik.html*
 **Installing certmanager**
 ```
 helm repo add jetstack https://charts.jetstack.io
@@ -32,3 +32,7 @@ k delete validatingwebhookconfigurations.admissionregistrantion.k8s.io cert-mana
 
 k get all -n cert-manager
 ```
+**Check cert**
+```
+k describe ClusterIssuer -n cert-manager
+k get secrets -n cert-manager spnw-intermediate-ca1-secret -o=jsonpath='{.data.tls\.crt}' | base64 --decode | openssl x509 -noot -text

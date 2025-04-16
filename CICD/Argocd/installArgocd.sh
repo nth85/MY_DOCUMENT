@@ -63,3 +63,21 @@ argocd admin initial-password -n argocd
 argocd login <ARGOCD_SERVER>
 # change password using command line firstime 
 argocd account update-password
+
+# change password for user admin on Argocd-secret
+using link bcrypt create passwork key
+https://www.browserling.com/tools/bcrypt 
+
+# bcrypt(password)=$2a$10$rRyBsGSHK6.uc8fntPwVIuLVHgsAhAX7TcdrqW/RADU0uh7CaChLa
+kubectl -n argocd patch secret argocd-secret \
+  -p '{"stringData": {
+    "admin.password": "$2a$10$rRyBsGSHK6.uc8fntPwVIuLVHgsAhAX7TcdrqW/RADU0uh7CaChLa",
+    "admin.passwordMtime": "'$(date +%FT%T%Z)'"
+  }}'
+
+##
+arogocd login IP_service
+argocd repo list
+argocd app list
+
+argocd app create ...

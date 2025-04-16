@@ -17,3 +17,15 @@ k apply -f ./charts --recursive
 k get pods -A
 k apply -f . gitea --recursive
 ```
+
+**Command Gitea**
+```
+k exec -it -n gitea gitea-... --bash
+
+gitea admin user list
+gitea admin user change-password --username nt.huy --password <pass>
+
+gitea admin user create --username nt.huy --password <pass> --email user@example.com
+
+gitea admin user delete --id 3 --username nt.huy
+```
