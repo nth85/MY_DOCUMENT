@@ -48,5 +48,19 @@ ex: PS D:\Kuberneste> git pull origin main
 git config –global user.name “Ten_cua_ban”.
 git config –global user.email “email_cua_ban”.
 ```
+**Command**
+```
+- creat branch new
+$ git checkout -b new_branch
+Switched to a new branch 'new_branch'
+- check
+$ git branch
+  master
+* new_branch
+- tranffer to main
+git checkout main  # Hoặc git checkout master
+-
+git merge your-branch-name
+```
 
 hxxxpxxxx22@
